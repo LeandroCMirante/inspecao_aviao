@@ -1,0 +1,923 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    endTimeCode = 1000000
+    metersPerUnit = 1
+    startTimeCode = 0
+    timeCodesPerSecond = 60
+    upAxis = "Z"
+)
+
+def "Render" (
+    hide_in_stage_window = true
+    no_delete = true
+)
+{
+    def "OmniverseKit"
+    {
+        def "HydraTextures" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            def RenderProduct "omni_kit_widget_viewport_ViewportTexture_0" (
+                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxSettingsParticleFieldAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
+                hide_in_stage_window = true
+                no_delete = true
+            )
+            {
+                rel camera = </OmniverseKit_Persp>
+                token omni:rtx:ambientOcclusion:denoiserMode = "none"
+                token omni:rtx:background:source:texture:textureMode = "repeatMirrored"
+                token omni:rtx:background:source:type = "domeLight"
+                bool omni:rtx:debug:view:pixelDebug:enableFixedTextPos = 1
+                token omni:rtx:directLighting:sampledLighting:denoisingTechnique = "None"
+                bool omni:rtx:dlss:frameGeneration = 0
+                bool omni:rtx:indirectDiffuse:denoiser:enabled = 0
+                bool omni:rtx:material:db:syncLoads = 1
+                token omni:rtx:post:dlss:execMode = "performance"
+                bool omni:rtx:post:registeredCompositing:invertColorCorrection = 1
+                bool omni:rtx:post:registeredCompositing:invertToneMap = 1
+                bool omni:rtx:pt:adaptiveSampling:filterError = 0
+                uint omni:rtx:pt:adaptiveSampling:fixedSppIterations = 2
+                int omni:rtx:pt:clampSpp = 64
+                uint omni:rtx:pt:limits:maxBounces = 3
+                uint omni:rtx:pt:limits:maxGlossyBounces = 3
+                uint omni:rtx:pt:maxSamplesPerLaunch = 2073600
+                uint omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
+                int omni:rtx:pt:samplesPerIteration = 64
+                uint omni:rtx:pt:samplesPerPixel = 64
+                bool omni:rtx:reflections:denoiser:enabled = 0
+                token omni:rtx:rendermode = "RealTimePathTracing"
+                color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
+                bool omni:rtx:rt:demoire = 0
+                bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
+                int omni:rtx:rt:sss:samples = 1
+                uint omni:rtx:rtpt:maxVolumeBounces = 15
+                float omni:rtx:rtpt:modulatingRoughnessThreshold = 0.08
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                bool omni:rtx:scene:hydra:mdlMaterialWarmup = 1
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1600, 900)
+            }
+        }
+    }
+
+    def RenderSettings "OmniverseGlobalRenderSettings" (
+        prepend apiSchemas = ["OmniRtxSettingsGlobalRtAdvancedAPI_1", "OmniRtxSettingsGlobalPtAdvancedAPI_1"]
+        no_delete = true
+    )
+    {
+        rel products = </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0>
+    }
+
+    def "Vars" (
+        hide_in_stage_window = true
+        no_delete = true
+    )
+    {
+        def RenderVar "LdrColor" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            uniform string sourceName = "LdrColor"
+            uniform token sourceType = "raw"
+        }
+    }
+}
+
+over "OmniverseKit_Persp"
+{
+    float exposure:fStop = 5
+    float exposure:responsivity = 1.1026709
+    float exposure:time = 0.02
+}
+
+def Xform "World"
+{
+    def PhysicsScene "physicsScene" (
+        prepend apiSchemas = ["NewtonSceneAPI", "PhysxSceneAPI"]
+    )
+    {
+        vector3f physics:gravityDirection = (0, 0, -1)
+        float physics:gravityMagnitude = 9.81
+        uint physxScene:timeStepsPerSecond = 500
+    }
+
+    def Xform "Ambiente"
+    {
+        def DomeLight "Ceu"
+        {
+            float inputs:intensity = 700
+            asset inputs:texture:file = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Skies/Clear/noon_grass_4k.hdr@
+            token inputs:texture:format = "latlong"
+        }
+
+        def DistantLight "Sol"
+        {
+            float inputs:angle = 0.8
+            float inputs:intensity = 1600
+            float3 xformOp:rotateXYZ = (35, 25, 40)
+            uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]
+        }
+
+        def Mesh "Patio" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            float3[] extent = [(-200, -200, 0), (200, 200, 0)]
+            int[] faceVertexCounts = [4]
+            int[] faceVertexIndices = [0, 1, 2, 3]
+            rel material:binding = </World/Ambiente/Patio_mat>
+            normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)]
+            point3f[] points = [(-200, -200, 0), (200, -200, 0), (200, 200, 0), (-200, 200, 0)]
+        }
+
+        def Material "Patio_mat"
+        {
+            token outputs:surface.connect = </World/Ambiente/Patio_mat/Shader.outputs:surface>
+
+            def Shader "Shader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.16, 0.16, 0.16)
+                float inputs:roughness = 0.6
+                token outputs:surface
+            }
+        }
+
+        def Plane "ChaoColisao" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+        )
+        {
+            uniform token axis = "Z"
+            double length = 400
+            rel material:binding:physics = </World/Ambiente/AtritoChao> (
+                bindMaterialAs = "weakerThanDescendants"
+            )
+            uniform token purpose = "guide"
+            double width = 400
+        }
+
+        def Mesh "FaixaTaxi" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            float3[] extent = [(-80, -0.15, 0.005), (80, 0.15, 0.005)]
+            int[] faceVertexCounts = [4]
+            int[] faceVertexIndices = [0, 1, 2, 3]
+            rel material:binding = </World/Ambiente/FaixaTaxi_mat>
+            normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)]
+            point3f[] points = [(-80, -0.15, 0.005), (80, -0.15, 0.005), (80, 0.15, 0.005), (-80, 0.15, 0.005)]
+        }
+
+        def Material "FaixaTaxi_mat"
+        {
+            token outputs:surface.connect = </World/Ambiente/FaixaTaxi_mat/Shader.outputs:surface>
+
+            def Shader "Shader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.95, 0.75, 0.1)
+                float inputs:roughness = 0.6
+                token outputs:surface
+            }
+        }
+
+        def Mesh "FaixaParada" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            float3[] extent = [(33, -6, 0.005), (33.3, 6, 0.005)]
+            int[] faceVertexCounts = [4]
+            int[] faceVertexIndices = [0, 1, 2, 3]
+            rel material:binding = </World/Ambiente/FaixaParada_mat>
+            normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)]
+            point3f[] points = [(33, -6, 0.005), (33.3, -6, 0.005), (33.3, 6, 0.005), (33, 6, 0.005)]
+        }
+
+        def Material "FaixaParada_mat"
+        {
+            token outputs:surface.connect = </World/Ambiente/FaixaParada_mat/Shader.outputs:surface>
+
+            def Shader "Shader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.95, 0.75, 0.1)
+                float inputs:roughness = 0.6
+                token outputs:surface
+            }
+        }
+
+        def Material "AtritoChao" (
+            prepend apiSchemas = ["PhysicsMaterialAPI"]
+        )
+        {
+            float physics:dynamicFriction = 1
+            float physics:restitution = 0
+            float physics:staticFriction = 1
+        }
+    }
+
+    def Xform "Avioes"
+    {
+        def Xform "sofia_747sp" (
+            prepend references = @../assets/avioes/usd/sofia_747sp/sofia_747sp.usd@
+        )
+        {
+            float xformOp:rotateZ = 0
+            double3 xformOp:translate = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+        }
+
+        def Xform "global_hawk" (
+            prepend references = @../assets/avioes/usd/global_hawk/global_hawk.usd@
+        )
+        {
+            float xformOp:rotateZ = 0
+            double3 xformOp:translate = (0, -55, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+        }
+
+        def Xform "x57_maxwell" (
+            prepend references = @../assets/avioes/usd/x57_maxwell/x57_maxwell.usd@
+        )
+        {
+            float xformOp:rotateZ = 0
+            double3 xformOp:translate = (0, -84, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+        }
+
+        def Xform "space_shuttle" (
+            prepend references = @../assets/avioes/usd/space_shuttle/space_shuttle.usd@
+        )
+        {
+            float xformOp:rotateZ = 0
+            double3 xformOp:translate = (-14, -106, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+        }
+    }
+
+    def Xform "Robos"
+    {
+        def Xform "ridgeback_franka" (
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/Clearpath/RidgebackFranka/ridgeback_franka.usd@
+        )
+        {
+            float xformOp:rotateZ = 90
+            double3 xformOp:translate = (30, -6, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+
+            over "panda_hand"
+            {
+                def Camera "CameraInspecao"
+                {
+                    float2 clippingRange = (0.02, 2000)
+                    float focalLength = 18
+                    float3 xformOp:rotateXYZ = (180, 0, 0)
+                    double3 xformOp:translate = (0.07, 0, 0.04)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+                }
+            }
+        }
+
+        def Xform "ridgeback_ur5" (
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/Clearpath/RidgebackUr/ridgeback_ur5.usd@
+        )
+        {
+            float xformOp:rotateZ = 90
+            double3 xformOp:translate = (27, -6, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+
+            over "base_link"
+            {
+                over "collisions"
+                {
+                    over "mesh_1"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+
+                    over "mesh_2"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+
+                    over "mesh_3"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+
+                    over "mesh_4"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+            }
+
+            over "ur_arm_wrist_3_link"
+            {
+                def Camera "CameraInspecao"
+                {
+                    float2 clippingRange = (0.02, 2000)
+                    float focalLength = 18
+                    float3 xformOp:rotateXYZ = (-90, 180, 0)
+                    double3 xformOp:translate = (0, 0.12, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+                }
+            }
+        }
+
+        def Xform "spot_braco" (
+            delete apiSchemas = ["PhysicsArticulationRootAPI", "PhysxArticulationAPI"]
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/BostonDynamics/spot/spot_with_arm.usd@
+        )
+        {
+            over "base" (
+                prepend apiSchemas = ["PhysicsArticulationRootAPI", "PhysxArticulationAPI", "PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxArticulation:enabledSelfCollisions = 0
+                int physxArticulation:solverPositionIterationCount = 4
+                int physxArticulation:solverVelocityIterationCount = 0
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+                quatd xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:translate = (24, -6, 0.8)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+                def Camera "CameraInspecao"
+                {
+                    float2 clippingRange = (0.02, 2000)
+                    float focalLength = 18
+                    float3 xformOp:rotateXYZ = (90, 0, -90)
+                    double3 xformOp:translate = (0.45, 0, 0.05)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+                }
+            }
+
+            over "arm0_link_sh0" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (0.00023413279, 0.00012919436, 0.0001911174)
+                float physics:mass = 0.05
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "arm0_link_sh1" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (0.00007022501, 0.00072819233, 0.00075927307)
+                float physics:mass = 0.05
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "arm0_link_el0" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (0.00005062431, 0.00014002605, 0.00015100454)
+                float physics:mass = 0.05
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "arm0_link_el1" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (0.000036657762, 0.0008316722, 0.0008303611)
+                float physics:mass = 0.05
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "arm0_link_wr0" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (0.000045366014, 0.00003333113, 0.000046013356)
+                float physics:mass = 0.05
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "arm0_link_wr1" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (0.000044182656, 0.00010554325, 0.00009757872)
+                float physics:mass = 0.05
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "arm0_link_fngr" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (0.00004354424, 0.00010823142, 0.0001449275)
+                float physics:mass = 0.05
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "fl_hip" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "fl_uleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "fl_lleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "fr_hip" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "fr_uleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "fr_lleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "hl_hip" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "hl_uleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "hl_lleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "hr_hip" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "hr_uleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+
+            over "hr_lleg" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                float physxRigidBody:angularDamping = 0
+                bool physxRigidBody:disableGravity = 0
+                float physxRigidBody:linearDamping = 0
+                float physxRigidBody:maxAngularVelocity = 1000
+                float physxRigidBody:maxDepenetrationVelocity = 1
+                float physxRigidBody:maxLinearVelocity = 1000
+                bool physxRigidBody:retainAccelerations = 0
+            }
+        }
+
+        def Xform "galbot_g1" (
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/Galbot/galbot_g1/galbot_g1.usda@
+        )
+        {
+            float xformOp:rotateZ = 90
+            double3 xformOp:translate = (20.5, -6, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+
+            over "OmniChassis"
+            {
+                over "Graph"
+                {
+                    over "ROS_Odometry" (
+                        active = false
+                    )
+                    {
+                    }
+
+                    over "holonomic_controller" (
+                        active = false
+                    )
+                    {
+                    }
+                }
+            }
+
+            over "Graph"
+            {
+                over "ROS_JointStates" (
+                    active = false
+                )
+                {
+                }
+            }
+        }
+
+        def Xform "drone_arl" (
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/NTNU/ARL-Robot-1/arl_robot_1.usd@
+        )
+        {
+            float xformOp:rotateZ = 90
+            double3 xformOp:translate = (17, -6, 0.4)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+
+            over "base_link" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+
+                def Camera "CameraInspecao"
+                {
+                    float2 clippingRange = (0.02, 2000)
+                    float focalLength = 18
+                    float3 xformOp:rotateXYZ = (90, 0, -90)
+                    double3 xformOp:translate = (0.28, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+                }
+            }
+
+            over "back_left_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "back_right_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "front_left_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "front_right_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+        }
+
+        def Xform "drone_crazyflie" (
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/Bitcraze/Crazyflie/cf2x.usd@
+        )
+        {
+            float xformOp:rotateZ = 90
+            double3 xformOp:translate = (15.5, -6, 0.3)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+
+            over "body" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+
+                def Camera "CameraInspecao"
+                {
+                    float2 clippingRange = (0.02, 2000)
+                    float focalLength = 18
+                    float3 xformOp:rotateXYZ = (90, 0, -90)
+                    double3 xformOp:translate = (0.04, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+                }
+            }
+
+            over "m1_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "m2_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "m3_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "m4_prop" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+        }
+
+        def Xform "drone_quadcopter" (
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/IsaacSim/Quadcopter/quadcopter.usd@
+        )
+        {
+            float xformOp:rotateZ = 90
+            double3 xformOp:scale = (0.05, 0.05, 0.05)
+            double3 xformOp:translate = (14, -6, 0.6)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ", "xformOp:scale"]
+
+            over "chassis" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+
+                def Camera "CameraInspecao"
+                {
+                    float2 clippingRange = (0.02, 2000)
+                    float focalLength = 18
+                    float3 xformOp:rotateXYZ = (90, 0, -90)
+                    double3 xformOp:translate = (6, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+                }
+            }
+
+            over "rotor_arm0" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor0" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor_arm1" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor1" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor_arm2" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor2" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor_arm3" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor3" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+        }
+
+        def Xform "drone_ingenuity" (
+            prepend references = @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots/NASA/Ingenuity/ingenuity.usd@
+        )
+        {
+            float xformOp:rotateZ = 90
+            double3 xformOp:translate = (12, -6, 0.3)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZ"]
+
+            over "chassis" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+
+                def Camera "CameraInspecao"
+                {
+                    float2 clippingRange = (0.02, 2000)
+                    float focalLength = 18
+                    float3 xformOp:rotateXYZ = (90, 0, -90)
+                    double3 xformOp:translate = (0.1, 0, 0.1)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ"]
+                }
+            }
+
+            over "rotor_physics_0" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor_visual_0" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor_physics_1" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+
+            over "rotor_visual_1" (
+                prepend apiSchemas = ["PhysxRigidBodyAPI"]
+            )
+            {
+                bool physxRigidBody:disableGravity = 1
+            }
+        }
+    }
+
+    def Xform "Cameras"
+    {
+        def Camera "Seguir"
+        {
+            float2 clippingRange = (0.05, 3000)
+            float focalLength = 20
+        }
+
+        def Camera "Panoramica"
+        {
+            float2 clippingRange = (0.1, 3000)
+            float focalLength = 16
+            matrix4d xformOp:transform = ( (0.7071067811865476, 0.7071067811865476, 0, 0), (-0.18123662799905307, 0.18123662799905307, 0.9665953493282833, -0), (0.6834861261734088, -0.6834861261734088, 0.25630729731502827, 0), (47.99999999999999, -47.99999999999999, 22, 1) )
+            uniform token[] xformOpOrder = ["xformOp:transform"]
+        }
+    }
+}
+
