@@ -35,4 +35,3 @@ colocar coisas na cena e como adicionar um robô.
 |---|---|---|
 | ![](imagens/02_robos_em_fila.png) | ![](imagens/03_drone_inspecionando_fuselagem.png) | ![](imagens/07_avioes_lado_a_lado.png) |
 | ![](imagens/05_spot_com_braco.png) | ![](imagens/06_galbot_g1.png) | ![](imagens/04_frota_de_drones.png) |
-# inspecao_aviao
